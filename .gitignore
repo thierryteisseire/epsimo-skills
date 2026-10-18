@@ -1,0 +1,24 @@
+# Packaged skills are attached to GitHub releases, not committed
+*.skill
+dist/
+
+# Skill-creator eval workspaces
+*-workspace/
+
+# Secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Outputs from the CLI
+*.csv
+results/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

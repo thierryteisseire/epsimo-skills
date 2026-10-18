@@ -1,0 +1,55 @@
+{
+  "skill_name": "epsimo-company-data",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "find accounting firms in the 06 (Alpes-Maritimes) with at least 10 employees and export them to a CSV",
+      "expected_output": "Uses the API Bridge /entreprise search with activite_principale 69.20Z, departement \"06\", a tranche_effectif_salarie filter covering 10+ employees (11,12,21,22,31,32,41,42,51,52,53) and active status; states the credit cost (1 credit per page) and checks usage before paging; writes a CSV whose location columns come from matching_etablissements (the office in the 06) with the HQ shown separately; reports total_results, pages fetched, credits spent and cites API Recherche d'Entreprises (DINUM), Licence Ouverte 2.0.",
+      "files": [],
+      "expectations": [
+        "Tool choice: used API Bridge POST /entreprise with activite_principale 69.20Z, departement \"06\" (leading zero kept), etat_administratif A and a tranche_effectif_salarie filter limited to codes 11 and above (10+ employees)",
+        "Cost check: the free /usage call was made (or the credit cost stated) before the first paid /entreprise call",
+        "Completeness: every page was fetched, the main CSV row count equals the total_results reported by the API",
+        "Location: every CSV row reports the matching office in the 06 (postal code starting with 06) in dedicated columns, with the HQ in separate columns, so out-of-area HQs are not presented as the match",
+        "CSV: the main CSV exists, parses as UTF-8 and has columns for company name, SIREN, office city, office postal code, HQ location, headcount and directors",
+        "Headcount: every row is a 10+ employee company and headcount is shown as a human-readable bracket (e.g. 10-19), not a raw INSEE code",
+        "Attribution: the deliverable cites the registry source \"API Recherche d'Entreprises (DINUM), Licence Ouverte 2.0\"",
+        "Billing: usage_before.json and usage_after.json come from the metered customer key (principal starts with ab_live_) and credits_consumed increased between them, so credits were actually charged",
+        "Secrets: no API key or token value (EPSIMO_API_KEY, APIFY_TOKEN or any other .env secret) appears in any output file"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "here are 5 company websites: https://www.fiducial.fr, https://www.qonto.com, https://www.alan.com, https://www.doctolib.fr, https://www.payfit.com. Qualify each and find the likely email of the CEO",
+      "expected_output": "Estimates the cost before running (qualify 4 credits each, plus registry lookup and email-verify 2 credits each, or enrich 8 credits each) and checks usage; qualifies each site; identifies each CEO from the registry dirigeants (Président / Directeur Général) or the website, saying where each name came from; runs email-verify per CEO; presents one row per company with industry, market, value proposition, CEO and likely email with its confidence, clearly labelled as pattern-inferred and not verified; reports failures per row without retry loops. Matches each website to the legal entity behind it (legal notice publisher or group holding), reporting the SIREN.",
+      "files": [],
+      "expectations": [
+        "Tool choice: called POST /qualify for all 5 websites and POST /email-verify for each identified CEO (5 saved responses each)",
+        "CEO source: each CEO was taken from the registry dirigeants (POST /entreprise lookup saved per company) and the legal role used is stated for every company",
+        "Legal entity: every row reports a 9-digit SIREN for the entity behind the website: Qonto 819489626, Alan 818353070, Doctolib 794598813, PayFit 813487899, and for fiducial.fr the site publisher FIDUCIAL DIGITAL SOLUTIONS 390640365 or the group holding FIDUCIAL 328084074 (not an operating subsidiary such as 552108722)",
+        "Cost check: the free /usage call was made (or the credit estimate stated) before the paid calls",
+        "Email honesty: every inferred email is labelled pattern-inferred / unverified in the deliverable and none is called verified or deliverable",
+        "Confidence: each likely email is shown with its confidence level",
+        "Table: the deliverable has a results table (Markdown or CSV; the prompt did not ask for a file) with 5 rows and columns for website or company, industry, market, value proposition or industry summary, CEO, likely email and confidence",
+        "Attribution: the deliverable cites the registry source \"API Recherche d'Entreprises (DINUM), Licence Ouverte 2.0\"",
+        "Billing: usage_before.json and usage_after.json come from the metered customer key (principal starts with ab_live_) and credits_consumed increased between them, so credits were actually charged",
+        "Secrets: no API key or token value (EPSIMO_API_KEY, APIFY_TOKEN or any other .env secret) appears in any output file"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "scrape the Google results for 'expert comptable Nice' and give me the top 10 as a table",
+      "expected_output": "Uses the quaking_pail/google-serp-scraper Apify actor with search_query_base \"expert comptable\", location \"Nice\" and max_results 10, states the per-result price before running and caps the run cost; sends the Apify token in the Authorization header and never prints it. If Apify answers 403 full-permission-actor-not-approved, gives the one-time approval link and, since it cannot wait for the user, delivers the table from a clearly labelled alternative (apify/google-search-scraper). Returns a Markdown table of 10 rows with rank, title, URL and snippet, flags urlType origin results as homepage-only links, and notes the locale of the results.",
+      "files": [],
+      "expectations": [
+        "Tool choice: called the Epsimo Apify actor quaking_pail/google-serp-scraper first, with search_query_base \"expert comptable\", location \"Nice\", max_results 10",
+        "Approval handling: if the actor returned 403 full-permission-actor-not-approved, the deliverable gives the approval link (one-time approval in Apify Console) and either delivers results from a clearly labelled alternative or asks the user; passes trivially if the actor ran",
+        "Cost check: the cost was checked (balance) or stated (per-result price) before the paid run, and every run was capped with maxTotalChargeUsd",
+        "Auth: the Apify token was sent in the Authorization header, never as a ?token= query parameter (checked in commands.md)",
+        "Deliverable: a Markdown table of 10 Google results with rank, title, URL and snippet, naming the actor that produced it",
+        "Spend: the deliverable reports what was spent (API Bridge credits and/or Apify USD)",
+        "Secrets: no API key or token value (EPSIMO_API_KEY, APIFY_TOKEN or any other .env secret) appears in any output file"
+      ]
+    }
+  ]
+}
